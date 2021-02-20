@@ -1,0 +1,34 @@
+version: "3.9"
+
+networks: 
+  localdev:
+    name: localdev
+volumes:
+  db-data:
+services:
+  api:
+    build: .
+    depends_on: 
+      - sql-server-db
+    ports: 
+      - "5000:80"
+    environment: 
+      Server: "sql-server-db"
+      User: "sa"
+      Password: "Simple_Password"
+    networks: 
+      - localdev
+  sql-server-db:
+    container_name: sql-server-db
+    image: microsoft/mssql-server-linux:2017-latest
+    volumes:
+       - db-data:/var/lib/mysql/data
+    ports:
+      - "1400:1433"
+    environment: 
+      SA_PASSWORD: "Simple_Password"
+      ACCEPT_EULA: "Y"
+      MSSQL_TCP_PORT: "1433"
+      MSSQL_PID: "Express"
+    networks: 
+      - localdev
