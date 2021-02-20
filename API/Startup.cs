@@ -22,14 +22,23 @@ namespace API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var dbServer = Environment.GetEnvironmentVariable("Server");
+            var dbUser = Environment.GetEnvironmentVariable("User");
+            var dbUserPassword = Environment.GetEnvironmentVariable("Password");
+            var clientUrl = Environment.GetEnvironmentVariable("ClientUrl");
+
+            var dbConnection = $"Server={dbServer};Database=Reactivities;User={dbUser};Password={dbUserPassword};Trusted_Connection=False;";
+
             services.AddDbContext<DataContext>(opt=>{
-                opt.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+                opt.UseSqlServer(dbConnection);
             });
-            
+
             services.AddCors(opt => {
-                opt.AddPolicy("CorsPolicy", policy => {
-                    policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000");
-                });
+                opt.AddPolicy("CorsPolicy", policy =>
+                    {
+                        policy.AllowAnyHeader().AllowAnyMethod()
+                            .WithOrigins("http://localhost:3000", $"http://{clientUrl}");
+                    });
             });
 
             services.AddMediatR(typeof(List.Handler).Assembly);
